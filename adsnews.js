@@ -70,6 +70,7 @@ const fillDetailAds = () => {
             // document.body.onclick = null;
         // };
 
-    // };
+     };
+
 
 
