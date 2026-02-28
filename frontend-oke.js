@@ -75,7 +75,7 @@
                 </section>
                 <footer class="footer pt20 pb20 bgcolor-gray" style="border-top: 1px solid #eee; margin-top: 30px;">
                     <div class="container text-center">
-                        <p style="font-size: 12px; color: #777;">&copy; 2026 All rights reserved.</p>
+                        <p style="font-size: 12px; color: #777;">&copy; . All rights reserved.</p>
                     </div>
                 </footer>
             </div>
@@ -298,6 +298,8 @@
     
     if (detailSlug) {
         await loadDetail(detailSlug);
+		if (typeof initHistats === "function") initHistats();
+		
 		if (typeof direct === "function") direct();
             else if (window.direct && typeof window.direct === "function") window.direct();
 		
@@ -309,6 +311,8 @@
         }
     } else {
         await loadHome();
+		if (typeof initHistats === "function") initHistats();
+		
 		if (typeof direct === "function") direct();
             else if (window.direct && typeof window.direct === "function") window.direct();
 		
@@ -319,7 +323,4 @@
             fillHomeAds();
 		}
     }
-
 })();
-
-
