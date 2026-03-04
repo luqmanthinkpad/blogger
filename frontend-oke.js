@@ -8,6 +8,7 @@
     const pathName = window.location.pathname;
     const urlParams = new URLSearchParams(window.location.search);
 
+    const pageParam = urlParams.get('page');
     const detailSlug = urlParams.get('detail') || (pathName !== '/' ? pathName.substring(1) : null);
     let isTldMode = (pathName !== '/' && !urlParams.has('detail'));
 
@@ -75,7 +76,7 @@
                 </section>
                 <footer class="footer pt20 pb20 bgcolor-gray" style="border-top: 1px solid #eee; margin-top: 30px;">
                     <div class="container text-center">
-                        <p style="font-size: 12px; color: #777;">&copy; . All rights reserved.</p>
+                        <p style="font-size: 12px; color: #777;">&copy; All rights reserved.</p>
                     </div>
                 </footer>
             </div>
@@ -296,7 +297,11 @@
     // --- ROUTER ---
     injectMetaLinks();
     
-    if (detailSlug) {
+    if (pageParam === 'sitemap') {
+        await renderRawXml('sitemap');
+    } else if (pageParam === 'rss') {
+        await renderRawXml('rss');
+    } else if (detailSlug) {
         await loadDetail(detailSlug);
 		if (typeof initHistats === "function") initHistats();
 		
