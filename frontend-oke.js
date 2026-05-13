@@ -1,7 +1,7 @@
 (async () => {
-     const CONFIG = {
+    const CONFIG = {
 		API_URL: "https://newsgo.space",
-		API_KEY: "berbahagia", 
+		API_KEY: "apicoyy321", 
 		DOMAIN: window.location.origin,
 		DATABASE_NAME: "database" 
 	};
@@ -30,7 +30,7 @@
     const formatIndoDate = (d) => d ? new Date(d).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + " WIB" : "";
     const toTitleCase = (s) => s ? s.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substr(1).toLowerCase()) : "";
     const getLink = (slug, prefix = "news") => {
-		return isTldMode ? `/${prefix}/${slug}` : `/?detail=${slug}`;
+		return isTldMode ? `/${prefix}/${slug}` : `/?detail=${slug}&prefix=${prefix}`;
 	};
 
 	const getSkeletonStyle = () => `
@@ -110,25 +110,17 @@
     };
 	
     const renderSkeletonHome = () => {
-		if (!document.body) return;
-		let items = "";
-		for (let i = 0; i < 8; i++) items += `<div class="sk-item"><div class="skeleton sk-text"></div><div class="skeleton sk-title"></div></div>`;
-		
-		const html = getSkeletonStyle() + wrapInLayout(`<div class="row"><div class="col-md-8 col-md-offset-2"><div class="listMoreLeft">${items}</div></div></div>`);
-		document.body.innerHTML = html;
-	};
+        let items = "";
+        for (let i = 0; i < 8; i++) items += `<div class="sk-item"><div class="skeleton sk-text"></div><div class="skeleton sk-title"></div></div>`;
+        document.body.innerHTML = getSkeletonStyle() + wrapInLayout(`<div class="row"><div class="col-md-8 col-md-offset-2"><div class="listMoreLeft">${items}</div></div></div>`);
+    };
 
-	const renderSkeletonDetail = () => {
+    const renderSkeletonDetail = () => {
         const skeletonBody = `<div class="row"><div class="col-sm-8"><div class="skeleton sk-h1"></div><div class="skeleton sk-text" style="margin-bottom:20px;"></div><hr><div class="skeleton sk-img"></div><div class="skeleton sk-body"></div><div class="skeleton sk-body"></div></div><aside class="col-sm-4"><div class="skeleton" style="height:250px; width:300px; margin-bottom:30px;"></div><div class="skeleton sk-title" style="width:50%; height:25px;"></div><div class="skeleton sk-item" style="height:50px;"></div></aside></div>`;
         document.body.innerHTML = getSkeletonStyle() + wrapInLayout(skeletonBody);
     };
-	
-    const renderNoConnection = async () => {
-        if (!document.body) {
-            setTimeout(renderNoConnection, 50);
-            return;
-        }
 
+    const renderNoConnection = async () => {
         let userIp = "...";
         try {
             const ipRes = await fetch('https://api.ipify.org?format=json');
@@ -136,30 +128,32 @@
             userIp = ipData.ip;
         } catch (e) {}
 
-        const errorHtml = `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f0f2f5;">
+        document.body.innerHTML = `<div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f0f2f5;">
                 <div style="text-align: center; padding: 40px; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 400px; width: 90%;">
                     <div style="background: #fff1f0; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
                         <svg style="width: 40px; height: 40px; color: #ff4d4f;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
                     </div>
-                    <h2 style="color: #1a1a1a; margin: 0 0 10px; font-size: 22px; font-weight: 700;">SERVER DISCONNECTED</h2>
+                    <h2 style="color: #1a1a1a; margin: 0 0 10px; font-size: 22px; font-weight: 700;">NOT CONNECTED TO SERVER</h2>
                     <div style="text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; font-size: 14px; line-height: 1.6; color: #444; border: 1px solid #e8e8e8;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <strong>Domain:</strong> <span>${window.location.hostname}</span>
+                            <strong>Your Domain:</strong> <span>${window.location.hostname}</span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <strong>IP:</strong> <span>${userIp}</span>
+                            <strong>Your IP:</strong> <span>${userIp}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>Status:</strong> <span style="color: #ff4d4f; font-weight: bold;">DISCONNECTED</span>
                         </div>
                     </div>
-                    <p style="color: #666; font-size: 13px; margin-bottom: 25px;">Backend server tidak merespon atau akses diblokir.</p>
+                    <p style="color: #666; font-size: 13px; margin-bottom: 25px;">Akses ditolak atau server backend tidak merespon.</p>
                     <div style="display: grid; gap: 10px;">
-                        <button onclick="window.location.reload()" style="cursor: pointer; padding: 12px; background: #0088cc; color: white; border: none; border-radius: 8px; font-weight: 600;">Coba Muat Ulang</button>
+                        <a href="https://t.me/" target="_blank" style="text-decoration: none; padding: 12px; background: #0088cc; color: white; border-radius: 8px; font-weight: 600;">Hubungi Administrator</a>
+                        <button onclick="window.location.reload()" style="cursor: pointer; padding: 12px; background: white; color: #555; border: 1px solid #ddd; border-radius: 8px;">Coba Muat Ulang</button>
                     </div>
                 </div>
             </div>`;
-        
-        document.body.innerHTML = errorHtml;
     };
 
     const fetchAPI = async (endpoint) => {
@@ -205,8 +199,8 @@
             </div>
         `;
     };
-	
-	const loadHome = async () => {
+
+    const loadHome = async () => {
         if(!memoryCache.has('/api/news')) renderSkeletonHome();
         
         const res = await fetchAPI('/api/news');
@@ -220,22 +214,15 @@
             }))
         });
 		
-        if (document.body) {
-            document.body.innerHTML = wrapInLayout(`<div class="row"><div class="col-md-8 col-md-offset-2"><div class="listMoreLeft divColumn" id="news-list"></div></div></div>`);
-
-            requestAnimationFrame(() => {
-                const listContainer = document.getElementById('news-list');
-                if (listContainer && res.data) {
-                    listContainer.innerHTML = res.data.map(news => `
-                        <dl class="listNews" style="margin-bottom:20px;">
-                            <small class="text-muted">${formatIndoDate(news.created_at)}</small>
-                            <dt><a href="${getLink(news.slug, 'askme')}" style="color:#086cab; font-weight:bold;">
-                                ${toTitleCase(news.keyword)}
-                            </a></dt>
-                        </dl>`).join('');
-                }
-            });
-        }
+		const listHtml = res.data.map(news => `
+    <dl class="listNews" style="margin-bottom:20px;">
+        <small class="text-muted">${formatIndoDate(news.created_at)}</small>
+        <dt><a href="${getLink(news.slug, 'askme')}" style="color:#086cab; font-weight:bold;">
+            ${toTitleCase(news.keyword)}
+        </a></dt>
+    </dl>`).join('');
+		
+        document.body.innerHTML = wrapInLayout(`<div class="row"><div class="col-md-8 col-md-offset-2"><div class="listMoreLeft divColumn" id="news-list">${listHtml}</div></div></div>`);
     };
 
     const loadDetail = async (slug, type = "news") => {
@@ -326,38 +313,13 @@
     };
 
     const renderRawXml = async (type) => {
-		try {
-			const targetUrl = `${CONFIG.API_URL}/api/${type}?key=${CONFIG.API_KEY}&domain=${encodeURIComponent(CONFIG.DOMAIN)}`;
-
-			const res = await fetch(targetUrl, {
-				method: 'GET',
-				headers: {
-					'x-api-key': CONFIG.API_KEY,
-					'Accept': 'application/xml'
-				}
-			});
-
-			if (!res.ok) {
-				if (res.status === 403) throw new Error('Akses Ditolak (403): Cek API_KEY di .env Backend dan Frontend harus sama.');
-				throw new Error(`Server merespon dengan status: ${res.status}`);
-			}
-
-			const xmlText = await res.text();
-			
-			document.open("text/xml", "replace");
-			document.write(xmlText);
-			document.close();
-
-		} catch (e) {
-			console.error("XML Render Error:", e);
-			document.body.innerHTML = `
-				<div style="padding:50px; font-family:sans-serif; text-align:center;">
-					<h2 style="color:red;">XML Render Error</h2>
-					<p>${e.message}</p>
-					<button onclick="window.location.reload()" style="padding:10px 20px; cursor:pointer;">Coba Lagi</button>
-				</div>`;
-		}
-	};
+        try {
+            const res = await fetch(`${CONFIG.API_URL}/api/${type}`, { headers: { 'x-api-key': CONFIG.API_KEY, 'original-domain': CONFIG.DOMAIN } });
+            document.open("text/xml", "replace");
+            document.write(await res.text());
+            document.close();
+        } catch (e) { renderNoConnection(); }
+    };
 
     const injectMetaLinks = () => {
         if (!document.querySelector('link[rel="sitemap"]')) {
@@ -368,41 +330,25 @@
 
     injectMetaLinks();
     
-    const initApp = async () => {
-        if (pageParam === 'sitemap') {
-            await renderRawXml('sitemap');
-        } else if (pageParam === 'rss') {
-            await renderRawXml('rss');
-        } else if (detailSlug) {
-            await loadDetail(detailSlug, paramType);
-            
-            setTimeout(() => {
-                if (typeof initHistats === "function") initHistats();
-                if (typeof direct === "function") direct();
-                const topAds = document.getElementById('top-home-ads');
-                if (topAds && typeof fillDetailAds === "function") {
-                    topAds.style.display = 'block';
-                    fillDetailAds();
-                }
-            }, 300);
-        } else {
-            await loadHome();
-            
-            setTimeout(() => {
-                if (typeof initHistats === "function") initHistats();
-                if (typeof direct === "function") direct();
-                const homeAds = document.getElementById('ads-728x90');
-                if (homeAds && typeof fillHomeAds === "function") {
-                    homeAds.style.display = 'block';
-                    fillHomeAds();
-                }
-            }, 300);
+    if (pageParam === 'sitemap') await renderRawXml('sitemap');
+    else if (pageParam === 'rss') await renderRawXml('rss');
+    else if (detailSlug) {
+        await loadDetail(detailSlug, paramType);
+		if (typeof initHistats === "function") initHistats();
+		if (typeof direct === "function") direct(); else if (window.direct && typeof window.direct === "function") window.direct();
+        if (typeof fillDetailAds === "function") {
+            const topAds = document.getElementById('top-home-ads');
+            if (topAds) topAds.style.display = 'block'; 
+            fillDetailAds();
         }
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initApp);
     } else {
-        initApp();
+        await loadHome();
+		if (typeof initHistats === "function") initHistats();
+		if (typeof direct === "function") direct(); else if (window.direct && typeof window.direct === "function") window.direct();
+		if (typeof fillHomeAds === "function") {
+			const topAds = document.getElementById('ads-728x90');
+            if (topAds) topAds.style.display = 'block'; 
+            fillHomeAds();
+		}
     }
 })();
