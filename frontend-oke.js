@@ -5,10 +5,10 @@
 		DOMAIN: window.location.origin,
 		DATABASE_NAME: "database",
 
-        SITE_NAME: "IPOTNEWS",
-        DEFAULT_TITLE: "IPOTNEWS - Berita Terbaru Hari Ini",
-        DEFAULT_DESCRIPTION: "Baca berita terbaru, informasi terkini, dan artikel pilihan hari ini.",
-        DEFAULT_KEYWORDS: "berita terbaru, berita hari ini, news, ipotnews",
+        SITE_NAME: "Diagram",
+        DEFAULT_TITLE: "Wiring",
+        DEFAULT_DESCRIPTION: "Wiring, Diagram, Schematic",
+        DEFAULT_KEYWORDS: "",
         DEFAULT_IMAGE: "https://cdn.jsdelivr.net/gh/luqmanthinkpad/csrnew/img/n1_ipotnews.png"
 	};
 
