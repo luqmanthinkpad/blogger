@@ -7,7 +7,7 @@
 
         SITE_NAME: "Diagram",
         DEFAULT_TITLE: "Wiring",
-        DEFAULT_DESCRIPTION: "",
+        DEFAULT_DESCRIPTION: "Diagram, Wiring, Schematic",
         DEFAULT_KEYWORDS: "",
         DEFAULT_IMAGE: "https://cdn.jsdelivr.net/gh/luqmanthinkpad/csrnew/img/n1_ipotnews.png"
 	};
