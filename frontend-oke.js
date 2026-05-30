@@ -3,7 +3,13 @@
 		API_URL: "https://newsgo.space",
 		API_KEY: "berbahagia", 
 		DOMAIN: window.location.origin,
-		DATABASE_NAME: "database" 
+		DATABASE_NAME: "database",
+
+        SITE_NAME: "IPOTNEWS",
+        DEFAULT_TITLE: "IPOTNEWS - Berita Terbaru Hari Ini",
+        DEFAULT_DESCRIPTION: "Baca berita terbaru, informasi terkini, dan artikel pilihan hari ini.",
+        DEFAULT_KEYWORDS: "berita terbaru, berita hari ini, news, ipotnews",
+        DEFAULT_IMAGE: "https://cdn.jsdelivr.net/gh/luqmanthinkpad/csrnew/img/n1_ipotnews.png"
 	};
 
     const memoryCache = new Map();
@@ -32,6 +38,103 @@
     const getLink = (slug, prefix = "news") => {
 		return isTldMode ? `/${prefix}/${slug}` : `/?detail=${slug}`;
 	};
+
+    const stripHtml = (value = "") => String(value)
+        .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#039;/gi, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const limitText = (value = "", max = 160) => {
+        const clean = stripHtml(value);
+        if (clean.length <= max) return clean;
+        return `${clean.substring(0, max).replace(/\s+\S*$/, "")}...`;
+    };
+
+    const parseMaybeJson = (value, fallback = []) => {
+        if (!value) return fallback;
+        if (Array.isArray(value)) return value;
+        if (typeof value !== "string") return value;
+        try { return JSON.parse(value); } catch(e) { return fallback; }
+    };
+
+    const toArray = (value) => {
+        if (!value) return [];
+        return Array.isArray(value) ? value : [value];
+    };
+
+    const getAbsoluteUrl = (url = "") => {
+        try { return new URL(url || "/", CONFIG.DOMAIN).href; } catch(e) { return CONFIG.DOMAIN; }
+    };
+
+    const setMetaTag = (selector, attrs) => {
+        let el = document.head.querySelector(selector);
+        if (!el) {
+            el = document.createElement('meta');
+            document.head.appendChild(el);
+        }
+        Object.entries(attrs).forEach(([key, value]) => {
+            if (value === null || value === undefined || value === "") {
+                el.removeAttribute(key);
+            } else {
+                el.setAttribute(key, value);
+            }
+        });
+        return el;
+    };
+
+    const setLinkTag = (selector, attrs) => {
+        let el = document.head.querySelector(selector);
+        if (!el) {
+            el = document.createElement('link');
+            document.head.appendChild(el);
+        }
+        Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
+        return el;
+    };
+
+    const setSeoMeta = ({ title, description, keywords, url, image, type = "website", publishedTime = "", modifiedTime = "" } = {}) => {
+        const seoTitle = limitText(title || CONFIG.DEFAULT_TITLE, 70);
+        const seoDescription = limitText(description || CONFIG.DEFAULT_DESCRIPTION, 160);
+        const seoKeywords = limitText(keywords || CONFIG.DEFAULT_KEYWORDS, 220);
+        const seoUrl = getAbsoluteUrl(url || window.location.href);
+        const seoImage = getAbsoluteUrl(image || CONFIG.DEFAULT_IMAGE);
+
+        document.title = seoTitle;
+
+        setMetaTag('meta[name="title"]', { name: 'title', content: seoTitle });
+        setMetaTag('meta[name="description"]', { name: 'description', content: seoDescription });
+        setMetaTag('meta[name="keywords"]', { name: 'keywords', content: seoKeywords });
+        setMetaTag('meta[name="robots"]', { name: 'robots', content: 'index, follow, max-image-preview:large' });
+        setMetaTag('meta[name="author"]', { name: 'author', content: CONFIG.SITE_NAME });
+        setMetaTag('meta[name="language"]', { name: 'language', content: 'id' });
+        setMetaTag('meta[name="revisit-after"]', { name: 'revisit-after', content: '1 days' });
+        setMetaTag('meta[name="viewport"]', { name: 'viewport', content: 'width=device-width, initial-scale=1' });
+        setLinkTag('link[rel="canonical"]', { rel: 'canonical', href: seoUrl });
+
+        setMetaTag('meta[property="og:locale"]', { property: 'og:locale', content: 'id_ID' });
+        setMetaTag('meta[property="og:type"]', { property: 'og:type', content: type });
+        setMetaTag('meta[property="og:site_name"]', { property: 'og:site_name', content: CONFIG.SITE_NAME });
+        setMetaTag('meta[property="og:title"]', { property: 'og:title', content: seoTitle });
+        setMetaTag('meta[property="og:description"]', { property: 'og:description', content: seoDescription });
+        setMetaTag('meta[property="og:url"]', { property: 'og:url', content: seoUrl });
+        setMetaTag('meta[property="og:image"]', { property: 'og:image', content: seoImage });
+        setMetaTag('meta[property="og:image:secure_url"]', { property: 'og:image:secure_url', content: seoImage });
+        setMetaTag('meta[property="og:image:alt"]', { property: 'og:image:alt', content: seoTitle });
+
+        setMetaTag('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
+        setMetaTag('meta[name="twitter:title"]', { name: 'twitter:title', content: seoTitle });
+        setMetaTag('meta[name="twitter:description"]', { name: 'twitter:description', content: seoDescription });
+        setMetaTag('meta[name="twitter:image"]', { name: 'twitter:image', content: seoImage });
+
+        if (publishedTime) setMetaTag('meta[property="article:published_time"]', { property: 'article:published_time', content: publishedTime });
+        if (modifiedTime) setMetaTag('meta[property="article:modified_time"]', { property: 'article:modified_time', content: modifiedTime });
+    };
 
 	const getSkeletonStyle = () => `
         <style>
@@ -212,11 +315,24 @@
         const res = await fetchAPI('/api/news');
         if (!res) return renderNoConnection();
 
+        const homeKeywords = res.data && res.data.length
+            ? res.data.slice(0, 10).map(item => stripHtml(item.keyword || item.title || "")).filter(Boolean).join(', ')
+            : CONFIG.DEFAULT_KEYWORDS;
+
+        setSeoMeta({
+            title: CONFIG.DEFAULT_TITLE,
+            description: CONFIG.DEFAULT_DESCRIPTION,
+            keywords: homeKeywords || CONFIG.DEFAULT_KEYWORDS,
+            url: CONFIG.DOMAIN,
+            image: CONFIG.DEFAULT_IMAGE,
+            type: 'website'
+        });
+
 		injectSchema({
             "@context": "https://schema.org",
             "@type": "ItemList",
             "itemListElement": res.data.map((news, index) => ({
-                "@type": "ListItem", "position": index + 1, "url": `${CONFIG.DOMAIN}${getLink(news.slug)}`
+                "@type": "ListItem", "position": index + 1, "url": `${CONFIG.DOMAIN}${getLink(news.slug, 'askme')}`
             }))
         });
 		
@@ -246,31 +362,53 @@
         if (!resDetail) return renderNoConnection();
 
         const news = resDetail.data;
-        document.title = toTitleCase(news.keyword);
+		
+		let contentData = news.json_sentences || news.content || []; 
+		let imagesData = news.json_images || news.images || [];
+
+		contentData = toArray(parseMaybeJson(contentData, typeof contentData === 'string' ? [contentData] : []));
+		imagesData = toArray(parseMaybeJson(imagesData, []));
+
+        const detailTitle = toTitleCase(news.keyword || news.title || slug);
+        const firstText = Array.isArray(contentData) ? contentData.map(item => typeof item === 'string' ? item : JSON.stringify(item)).join(' ') : String(contentData || '');
+        const detailDescription = news.description || news.meta_description || news.summary || firstText || detailTitle;
+        const detailKeywords = [news.keyword, news.title, news.category, news.tags, news.keywords]
+            .flatMap(item => Array.isArray(item) ? item : String(item || '').split(','))
+            .map(item => stripHtml(item))
+            .filter(Boolean)
+            .join(', ');
+        const firstImage = Array.isArray(imagesData) && imagesData.length ? (imagesData[0].url || imagesData[0]) : CONFIG.DEFAULT_IMAGE;
+        const canonicalPath = getLink(slug, type === 'news' ? 'askme' : type);
+
+        setSeoMeta({
+            title: detailTitle,
+            description: detailDescription,
+            keywords: detailKeywords || CONFIG.DEFAULT_KEYWORDS,
+            url: `${CONFIG.DOMAIN}${canonicalPath}`,
+            image: firstImage,
+            type: 'article',
+            publishedTime: news.created_at,
+            modifiedTime: news.updated_at || news.created_at
+        });
 		
 		injectSchema({
             "@context": "https://schema.org",
             "@type": "NewsArticle",
-            "headline": toTitleCase(news.keyword),
-            "image": news.json_images || [],
+            "headline": detailTitle,
+            "description": limitText(detailDescription, 160),
+            "image": imagesData.map(img => img.url || img).filter(Boolean),
+            "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": `${CONFIG.DOMAIN}${canonicalPath}`
+            },
             "datePublished": news.created_at,
-            "dateModified": news.created_at,
+            "dateModified": news.updated_at || news.created_at,
             "author": {
                 "@type": "Organization",
                 "name": "X"
             }
         });
 		
-		let contentData = news.json_sentences || news.content || []; 
-		let imagesData = news.json_images || news.images || [];
-
-		if (typeof contentData === 'string') {
-			try { contentData = JSON.parse(contentData); } catch(e) { contentData = [contentData]; }
-		}
-		if (typeof imagesData === 'string') {
-			try { imagesData = JSON.parse(imagesData); } catch(e) { imagesData = []; }
-		}
-
 		const bodyHtml = contentData.map((text, i) => {
 			const imgUrl = (imagesData && imagesData[i]) ? (imagesData[i].url || imagesData[i]) : "";
 			const imgTag = imgUrl ? `<img src="${imgUrl}" alt="${news.keyword || news.title}" style="width:50%; border-radius:8px; margin: 10px 0 20px 0;">` : "";
